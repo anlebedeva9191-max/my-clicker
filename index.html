@@ -2,118 +2,121 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Ultimate Clicker Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clicker Online Pro</title>
     <style>
-        /* Переменные для тем */
         :root {
-            --bg: #121212; --card: #1e1e1e; --text: #ffffff; --accent: #ffcc00; --input: #2a2a2a;
+            --bg: #121212; --card: #1e1e1e; --text: #ffffff; --accent: #00ff44; --input: #2a2a2a;
         }
         .light-theme {
-            --bg: #f0f205; --card: #ffffff; --text: #121212; --accent: #ff6600; --input: #eeeeee;
+            --bg: #f0f0f0; --card: #ffffff; --text: #121212; --accent: #008822; --input: #e0e0e0;
         }
 
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; transition: 0.3s; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .window { background: var(--card); padding: 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); width: 350px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; transition: 0.3s; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .window { background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 340px; text-align: center; position: relative; }
         .hidden { display: none; }
 
-        /* Красивые инпуты */
-        input, select { width: 90%; padding: 12px; margin: 10px 0; border-radius: 12px; border: none; background: var(--input); color: var(--text); font-size: 16px; }
-        .btn { background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3); }
+        /* Интерфейс регистрации */
+        input, select { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: var(--input); color: var(--text); font-size: 16px; }
+        .btn { background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; margin-top: 10px; }
 
-        /* Стили игры */
-        .score { font-size: 54px; font-weight: 800; margin: 20px 0; color: var(--accent); text-shadow: 0 0 20px rgba(255,204,0,0.2); }
-        #click-me { 
-            width: 140px; height: 140px; background: var(--accent); 
-            border-radius: 40px; margin: 20px auto; cursor: pointer; 
-            display: flex; justify-content: center; align-items: center; 
-            font-size: 50px; user-select: none; transition: 0.1s;
-            box-shadow: 0 8px 0 #cca300;
-        }
-        #click-me:active { transform: translateY(4px); box-shadow: 0 4px 0 #cca300; }
+        /* Игра */
+        .score { font-size: 50px; font-weight: bold; margin: 15px 0; color: var(--accent); }
+        #click-zone { width: 160px; height: 160px; margin: 20px auto; cursor: pointer; transition: 0.1s; user-select: none; }
+        #click-img { width: 100%; height: 100%; object-fit: contain; }
+        #click-zone:active { transform: scale(0.92); }
 
-        /* Топ игроков */
-        .top-list { margin-top: 25px; background: rgba(0,0,0,0.1); padding: 15px; border-radius: 16px; text-align: left; }
-        .player-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        
-        /* Кнопка смены темы */
-        .theme-toggle { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; }
+        /* Таблица лидеров */
+        .leaderboard { margin-top: 20px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; text-align: left; font-size: 14px; }
+        .row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .me { color: var(--accent); font-weight: bold; }
+
+        /* Кнопки настроек */
+        .controls { position: absolute; top: -45px; right: 0; display: flex; gap: 10px; }
+        .small-btn { background: var(--card); color: var(--text); border: 1px solid var(--input); padding: 5px 10px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
-<body class="dark-theme">
+<body>
 
-<div class="theme-toggle" onclick="toggleTheme()">🌓</div>
+<div class="window">
+    <div class="controls">
+        <button class="small-btn" onclick="toggleTheme()">🌓</button>
+    </div>
 
-<div id="auth-screen" class="window">
-    <h2 id="t-reg">Регистрация</h2>
-    <input type="text" id="username" placeholder="Твой ник...">
-    <select id="lang-select">
-        <option value="ru">Русский</option>
-        <option value="en">English</option>
-    </select>
-    <button class="btn" onclick="startGame()" id="t-start">ПОГНАЛИ</button>
-</div>
+    <div id="auth">
+        <h2 id="l-reg">Регистрация</h2>
+        <input type="text" id="username" placeholder="Твой ник...">
+        <select id="lang">
+            <option value="ru">Русский</option>
+            <option value="en">English</option>
+        </select>
+        <button class="btn" onclick="initGame()" id="l-btn">ИГРАТЬ</button>
+    </div>
 
-<div id="game-screen" class="window hidden">
-    <div id="t-welcome" style="font-weight: 600; opacity: 0.8;"></div>
-    <div class="score" id="score">0</div>
-    <div id="click-me">🥤</div>
-    
-    <div class="top-list">
-        <strong id="t-top"></strong>
-        <div id="leaderboard"></div>
+    <div id="game" class="hidden">
+        <div id="l-hello" style="opacity: 0.7;"></div>
+        <div class="score" id="score">0</div>
+        
+        <div id="click-zone">
+            <img src="assets/click.png" id="click-img" alt="Click!">
+        </div>
+        
+        <div class="leaderboard">
+            <div id="l-top" style="margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid #444;"></div>
+            <div id="board"></div>
+        </div>
     </div>
 </div>
 
 <script>
-    const langData = {
-        ru: { reg: "Вход в игру", start: "ИГРАТЬ", welcome: "Привет", top: "ТОП ЛИДЕРОВ" },
-        en: { reg: "Sign In", start: "PLAY", welcome: "Welcome", top: "LEADERBOARD" }
+    const i18n = {
+        ru: { reg: "Вход в систему", btn: "ПОГНАЛИ", hello: "Привет", top: "ТОП ИГРОКОВ" },
+        en: { reg: "Registration", btn: "START", hello: "Welcome", top: "TOP PLAYERS" }
     };
 
-    let p = { name: "", clicks: 0, lang: "ru" };
+    let state = { name: "", clicks: 0, lang: "ru" };
 
     function toggleTheme() {
         document.body.classList.toggle('light-theme');
     }
 
-    function startGame() {
-        const nameInput = document.getElementById('username').value;
-        if (!nameInput) return alert("Бро, имя введи!");
+    function initGame() {
+        const name = document.getElementById('username').value;
+        if (!name) return alert("Введи ник!");
         
-        p.name = nameInput;
-        p.lang = document.getElementById('lang-select').value;
-        
-        document.getElementById('t-welcome').innerText = `${langData[p.lang].welcome}, ${p.name}!`;
-        document.getElementById('t-top').innerText = langData[p.lang].top;
+        state.name = name;
+        state.lang = document.getElementById('lang').value;
 
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('game-screen').classList.remove('hidden');
-        render();
+        // Перевод текста
+        document.getElementById('l-hello').innerText = `${i18n[state.lang].hello}, ${state.name}`;
+        document.getElementById('l-top').innerText = i18n[state.lang].top;
+
+        document.getElementById('auth').classList.add('hidden');
+        document.getElementById('game').classList.remove('hidden');
+        renderBoard();
     }
 
-    document.getElementById('click-me').onclick = () => {
-        p.clicks++;
-        render();
+    document.getElementById('click-zone').onclick = () => {
+        state.clicks++;
+        document.getElementById('score').innerText = state.clicks;
+        renderBoard();
     };
 
-    function render() {
-        document.getElementById('score').innerText = p.clicks;
+    function renderBoard() {
         let players = [
-            { n: "Top_Player", c: 5000 },
             { n: "S1mple", c: 2500 },
-            { n: p.name, c: p.clicks }
+            { n: "Buster", c: 1200 },
+            { n: state.name, c: state.clicks }
         ].sort((a, b) => b.c - a.c);
 
         let html = "";
-        players.forEach((player, i) => {
-            let isMe = player.n === p.name ? "color: var(--accent); font-weight: bold;" : "";
-            html += `<div class="player-row" style="${isMe}">
-                        <span>${i+1}. ${player.n}</span>
-                        <span>${player.c}</span>
-                    </div>`;
+        players.forEach((p, i) => {
+            const isMe = p.n === state.name ? "me" : "";
+            html += `<div class="row ${isMe}"><span>${i+1}. ${p.n}</span><span>${p.c}</span></div>`;
         });
-        document.getElementById('leaderboard').innerHTML = html;
+        document.getElementById('board').innerHTML = html;
     }
 </script>
+
 </body>
 </html>
