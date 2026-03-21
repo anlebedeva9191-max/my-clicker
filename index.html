@@ -2,102 +2,97 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Clicker</title>
+    <title>Ultimate Clicker</title>
     <style>
-        body { background: #1a1a1a; color: #00ff00; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
-        .container { background: #222; border: 2px solid #333; padding: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,255,0,0.1); width: 400px; text-align: center; }
+        body { background: #0f0f0f; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .game-card { background: #1e1e1e; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 350px; text-align: center; border: 1px solid #333; }
         
-        /* Индикатор онлайн */
-        .status { font-size: 12px; text-align: right; margin-bottom: 10px; color: #00ff00; text-shadow: 0 0 5px #00ff00; }
-        .status::before { content: "● "; animation: blink 1s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+        /* Счетчик и Лвл */
+        .score { font-size: 48px; font-weight: bold; margin: 10px 0; color: #ffcc00; }
+        .level-info { font-size: 18px; color: #aaa; margin-bottom: 20px; }
 
-        /* Главная кнопка */
-        #clickBtn { background: #333; border: 2px solid #00ff00; color: #00ff00; padding: 20px; font-size: 18px; cursor: pointer; border-radius: 5px; width: 100%; transition: 0.1s; }
-        #clickBtn:active { transform: scale(0.95); background: #00ff00; color: #000; }
+        /* Кнопка Клика */
+        #click-zone { width: 150px; height: 150px; background: radial-gradient(#ffcc00, #ff9900); border-radius: 50%; margin: 0 auto 20px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 0 0 20px rgba(255, 204, 0, 0.4); transition: 0.1s; user-select: none; }
+        #click-zone:active { transform: scale(0.9); box-shadow: 0 0 5px rgba(255, 204, 0, 0.2); }
 
-        /* Полоска опыта */
-        .xp-bar { width: 100%; height: 10px; background: #111; border-radius: 5px; margin: 15px 0; overflow: hidden; }
-        #xp-fill { width: 0%; height: 100%; background: #00ff00; transition: 0.3s; box-shadow: 0 0 10px #00ff00; }
-
-        /* Таблица лидеров (TAB-стиль) */
-        .leaderboard { margin-top: 20px; text-align: left; font-size: 14px; border-top: 1px solid #333; padding-top: 10px; }
-        .player-row { display: flex; justify-content: space-between; padding: 3px 5px; }
-        .me { background: rgba(255, 165, 0, 0.2); color: #ffa500; font-weight: bold; border-radius: 3px; }
+        /* Таблица ТОП (Tab-стиль) */
+        .top-list { background: #252525; border-radius: 10px; padding: 10px; text-align: left; margin-top: 20px; }
+        .top-title { font-size: 14px; color: #666; text-transform: uppercase; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .player-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #333; font-size: 14px; }
+        .player-item.current { color: #ffcc00; font-weight: bold; }
+        .online-tag { color: #00ff00; font-size: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="status">SERVER ONLINE</div>
-    <h2 id="nameDisplay">Hacker_Bro</h2>
-    <div id="rankDisplay">Rank: Script Kiddie (Lvl 1)</div>
+<div class="game-card">
+    <div class="level-info">Уровень: <span id="lvl">1</span></div>
+    <div class="score" id="score">0</div>
     
-    <div class="xp-bar"><div id="xp-fill"></div></div>
+    <div id="click-zone">💰</div>
     
-    <button id="clickBtn">ИНИЦИИРОВАТЬ КЛИК</button>
-    
-    <div class="leaderboard" id="leaderboard">
-        </div>
+    <div class="top-list">
+        <div class="top-title"><span>ТОП ИГРОКОВ</span> <span class="online-tag">● ONLINE</span></div>
+        <div id="leaderboard">
+            </div>
+    </div>
 </div>
 
 <script>
-    // База данных
-    let p = {
-        clicks: Number(localStorage.getItem('h_c')) || 0,
-        lvl: Number(localStorage.getItem('h_l')) || 1,
-        xp: Number(localStorage.getItem('h_x')) || 0
+    // Загрузка данных
+    let data = {
+        clicks: Number(localStorage.getItem('c_val')) || 0,
+        lvl: Number(localStorage.getItem('l_val')) || 1
     };
 
+    // Фейковый онлайн-топ (для вайба)
     let players = [
-        { n: "G-Man", c: 10000, l: 80 },
-        { n: "Pro_Gmodder", c: 5000, l: 45 },
-        { n: "Fanta_Fan", c: 1200, l: 12 },
-        { n: "Hacker_Bro", c: p.clicks, l: p.lvl }
+        { name: "S1mple_Fan", clicks: 15000, lvl: 150 },
+        { name: "Fanta_Monster", clicks: 7500, lvl: 75 },
+        { name: "Bro_Gamer", clicks: 3200, lvl: 32 },
+        { name: "Я (Ты)", clicks: data.clicks, lvl: data.lvl }
     ];
 
-    const btn = document.getElementById('clickBtn');
+    const zone = document.getElementById('click-zone');
     
-    btn.onclick = () => {
-        p.clicks++;
-        p.xp += 50;
-
-        if(p.xp >= 1000) {
-            p.lvl++;
-            p.xp = 0;
-            alert("LEVEL UP! Твой ранг повышен!");
+    zone.onclick = () => {
+        data.clicks++;
+        
+        // Каждые 50 кликов — новый уровень
+        if (data.clicks % 50 === 0) {
+            data.lvl++;
         }
         
-        saveAndRender();
+        render();
     };
 
-    function saveAndRender() {
-        localStorage.setItem('h_c', p.clicks);
-        localStorage.setItem('h_l', p.lvl);
-        localStorage.setItem('h_x', p.xp);
+    function render() {
+        // Сохранение
+        localStorage.setItem('c_val', data.clicks);
+        localStorage.setItem('l_val', data.lvl);
 
-        // Обновляем данные в топе
-        let me = players.find(x => x.n === "Hacker_Bro");
-        me.c = p.clicks;
-        me.l = p.lvl;
-        players.sort((a, b) => b.c - a.c);
+        // Обновление цифр
+        document.getElementById('score').innerText = data.clicks;
+        document.getElementById('lvl').innerText = data.lvl;
 
-        // UI
-        document.getElementById('rankDisplay').innerText = `Rank: Level ${p.lvl}`;
-        document.getElementById('xp-fill').style.width = (p.xp / 10) + "%";
-        
+        // Обновление топа
+        let me = players.find(x => x.name === "Я (Ты)");
+        me.clicks = data.clicks;
+        me.lvl = data.lvl;
+        players.sort((a, b) => b.clicks - a.clicks);
+
         let html = "";
-        players.forEach((player, i) => {
-            let isMe = player.n === "Hacker_Bro" ? "me" : "";
-            html += `<div class="player-row ${isMe}">
-                        <span>${i+1}. ${player.n}</span>
-                        <span>Lvl ${player.l} | ${player.c}</span>
+        players.forEach((p, i) => {
+            let isMe = p.name === "Я (Ты)" ? "current" : "";
+            html += `<div class="player-item ${isMe}">
+                        <span>${i+1}. ${p.name}</span>
+                        <span>Lvl ${p.lvl} | ${p.clicks}</span>
                     </div>`;
         });
         document.getElementById('leaderboard').innerHTML = html;
     }
 
-    saveAndRender();
+    render();
 </script>
 
 </body>
