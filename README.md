@@ -13,6 +13,7 @@ The ultimate web-based farming simulator. Click, upgrade, and build your digital
 2. **Upgrade** your clicking power with "Strong Fingers".
 3. **Invest** in "Video Cards" to start earning money while you sleep.
 4. **Don't close the tab** (or do! your progress is saved anyway).
+5. GAME:https://anlebedeva9191-max.github.io/my-clicker-version-1.0-/
 
 ## 🛠️ Technical Stack
 - **Frontend:** HTML5, CSS3
