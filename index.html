@@ -2,163 +2,99 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Clicker Pro</title>
+    <title>MEGA CLICKER v2.0</title>
     <style>
-        body { 
-            background: #0f0f0f; color: #00ff41; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; height: 100vh; margin: 0; overflow: hidden;
-            user-select: none;
+        body { background: #1a1a1a; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; }
+        .container { margin-top: 50px; }
+        #balance { font-size: 48px; color: #00ff88; text-shadow: 0 0 10px #00ff88; }
+        .click-btn { 
+            padding: 20px 50px; font-size: 24px; cursor: pointer; 
+            background: #ff4444; border: none; color: white; border-radius: 10px;
+            transition: 0.1s; margin: 20px;
         }
-        .lang-switch { position: absolute; top: 20px; right: 20px; }
-        .lang-switch button { background: #222; color: #00ff41; border: 1px solid #00ff41; cursor: pointer; padding: 5px 10px; margin-left: 5px; }
-        
-        .stats { font-size: 32px; font-weight: bold; text-shadow: 0 0 15px #00ff41; margin-bottom: 5px; }
-        .cps-text { font-size: 18px; color: #888; margin-bottom: 25px; }
-
-        #click-btn { 
-            width: 200px; height: 200px; border-radius: 50%; border: 6px solid #00ff41; 
-            background: radial-gradient(circle, #1a1a1a 0%, #000 100%); 
-            color: #00ff41; font-size: 40px; font-weight: bold; cursor: pointer; 
-            transition: transform 0.05s, box-shadow 0.1s; 
-            box-shadow: 0 0 25px rgba(0, 255, 65, 0.2); outline: none;
+        .click-btn:active { transform: scale(0.95); }
+        .shop { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .item { 
+            background: #333; padding: 15px; border-radius: 8px; width: 200px;
+            border: 1px solid #444;
         }
-        #click-btn:active { transform: scale(0.92); box-shadow: 0 0 50px #00ff41; }
-
-        .shop { margin-top: 30px; display: flex; flex-direction: column; gap: 12px; width: 300px; }
-        .upgrade-btn { 
-            padding: 12px; background: #1a1a1a; color: #00ff41; 
-            border: 1px solid #333; cursor: pointer; border-radius: 8px;
-            display: flex; justify-content: space-between; transition: 0.2s;
-        }
-        .upgrade-btn:hover:not(:disabled) { border-color: #00ff41; background: #222; }
-        .upgrade-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: #444; color: #666; }
-
-        .floating-text {
-            position: absolute; pointer-events: none; font-weight: bold;
-            animation: floatUp 0.8s ease-out forwards;
-        }
-        @keyframes floatUp {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100px); opacity: 0; }
-        }
+        button.buy { background: #0088ff; border: none; color: white; padding: 10px; cursor: pointer; border-radius: 5px; }
+        button.buy:disabled { background: #555; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-    <div class="lang-switch">
-        <button onclick="changeLang('ru')">RU</button>
-        <button onclick="changeLang('en')">EN</button>
-    </div>
-
-    <div class="stats"><span id="txt-bal">Баланс</span>: <span id="score">0</span> $</div>
-    <div class="cps-text"><span id="txt-cps">Доход</span>: <span id="cps">0</span> /sec</div>
+<div class="container">
+    <h1>MEGA CLICKER v2.0</h1>
+    <div id="balance">$0</div>
+    <p id="stats">Доход: $0/сек | Сила клика: 1</p>
     
-    <button id="click-btn">CLICK</button>
+    <button class="click-btn" onclick="doClick()">КЛИК!</button>
 
     <div class="shop">
-        <button id="upg-click" class="upgrade-btn">
-            <span id="txt-upg-c">Сила клика</span>
-            <span id="c-cost">10</span>
-        </button>
-        <button id="upg-auto" class="upgrade-btn">
-            <span id="txt-upg-a">Авто-ферма</span>
-            <span id="a-cost">50</span>
-        </button>
-        <button onclick="resetGame()" style="background: none; border: none; color: #555; cursor: pointer; margin-top: 10px; font-size: 12px;">Reset Data</button>
+        <div class="item">
+            <h3>Сильные пальцы</h3>
+            <p>Цена: $<span id="cost1">10</span></p>
+            <button class="buy" id="btn1" onclick="buyUpgrade('click')">Купить (+1 к клику)</button>
+        </div>
+        <div class="item">
+            <h3>Видеокарта</h3>
+            <p>Цена: $<span id="cost2">50</span></p>
+            <button class="buy" id="btn2" onclick="buyUpgrade('auto')">Купить (+$2/сек)</button>
+        </div>
     </div>
+    <br>
+    <button onclick="resetGame()" style="background:none; border:1px solid #555; color:#555; cursor:pointer;">Сброс прогресса</button>
+</div>
 
-    <script>
-        // Данные
-        let score = parseFloat(localStorage.getItem('score')) || 0;
-        let clickPower = parseInt(localStorage.getItem('clickPower')) || 1;
-        let autoPower = parseInt(localStorage.getItem('autoPower')) || 0;
-        let upgClickCost = parseInt(localStorage.getItem('upgClickCost')) || 10;
-        let upgAutoCost = parseInt(localStorage.getItem('upgAutoCost')) || 50;
+<script>
+    let state = JSON.parse(localStorage.getItem('clickerSave')) || {
+        money: 0, clickPower: 1, mps: 0, cost1: 10, cost2: 50
+    };
 
-        const translations = {
-            ru: { bal: "Баланс", cps: "Доход", upgc: "Сила клика +1", upga: "Авто-ферма +1" },
-            en: { bal: "Balance", cps: "Income", upgc: "Click Power +1", upga: "Auto-Farm +1" }
-        };
+    function updateUI() {
+        document.getElementById('balance').innerText = '$' + Math.floor(state.money);
+        document.getElementById('stats').innerText = `Доход: $${state.mps}/сек | Сила клика: ${state.clickPower}`;
+        document.getElementById('cost1').innerText = state.cost1;
+        document.getElementById('cost2').innerText = state.cost2;
+        
+        document.getElementById('btn1').disabled = state.money < state.cost1;
+        document.getElementById('btn2').disabled = state.money < state.cost2;
+        localStorage.setItem('clickerSave', JSON.stringify(state));
+    }
 
-        function changeLang(lang) {
-            localStorage.setItem('lang', lang);
-            document.getElementById('txt-bal').innerText = translations[lang].bal;
-            document.getElementById('txt-cps').innerText = translations[lang].cps;
-            document.getElementById('txt-upg-c').innerText = translations[lang].upgc;
-            document.getElementById('txt-upg-a').innerText = translations[lang].upga;
-        }
-
-        function updateUI() {
-            document.getElementById('score').innerText = Math.floor(score);
-            document.getElementById('cps').innerText = autoPower;
-            document.getElementById('c-cost').innerText = upgClickCost + " $";
-            document.getElementById('a-cost').innerText = upgAutoCost + " $";
-            document.getElementById('upg-click').disabled = score < upgClickCost;
-            document.getElementById('upg-auto').disabled = score < upgAutoCost;
-        }
-
-        // Логика клика
-        document.getElementById('click-btn').onclick = (e) => {
-            score += clickPower;
-            spawnText(e);
-            save();
-            updateUI();
-        };
-
-        function spawnText(e) {
-            const t = document.createElement('div');
-            t.className = 'floating-text';
-            t.innerText = "+" + clickPower;
-            t.style.left = e.pageX + "px";
-            t.style.top = e.pageY + "px";
-            document.body.appendChild(t);
-            setTimeout(() => t.remove(), 800);
-        }
-
-        // Апгрейды
-        document.getElementById('upg-click').onclick = () => {
-            if(score >= upgClickCost) {
-                score -= upgClickCost; clickPower++;
-                upgClickCost = Math.round(upgClickCost * 1.6);
-                save(); updateUI();
-            }
-        };
-
-        document.getElementById('upg-auto').onclick = () => {
-            if(score >= upgAutoCost) {
-                score -= upgAutoCost; autoPower++;
-                upgAutoCost = Math.round(upgAutoCost * 1.8);
-                save(); updateUI();
-            }
-        };
-
-        // Авто-майнинг
-        setInterval(() => {
-            if(autoPower > 0) {
-                score += autoPower / 10;
-                updateUI();
-            }
-        }, 100);
-
-        function save() {
-            localStorage.setItem('score', score);
-            localStorage.setItem('clickPower', clickPower);
-            localStorage.setItem('autoPower', autoPower);
-            localStorage.setItem('upgClickCost', upgClickCost);
-            localStorage.setItem('upgAutoCost', upgAutoCost);
-        }
-
-        function resetGame() {
-            if(confirm("Сбросить всё?")) { localStorage.clear(); location.reload(); }
-        }
-
-        // Старт
-        const startLang = localStorage.getItem('lang') || 'ru';
-        changeLang(startLang);
+    function doClick() {
+        state.money += state.clickPower;
         updateUI();
-    </script>
+    }
+
+    function buyUpgrade(type) {
+        if (type === 'click' && state.money >= state.cost1) {
+            state.money -= state.cost1;
+            state.clickPower += 1;
+            state.cost1 = Math.floor(state.cost1 * 1.5);
+        } else if (type === 'auto' && state.money >= state.cost2) {
+            state.money -= state.cost2;
+            state.mps += 2;
+            state.cost2 = Math.floor(state.cost2 * 1.6);
+        }
+        updateUI();
+    }
+
+    function resetGame() {
+        if(confirm("Точно сбросить?")) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+
+    // Авто-майнинг раз в секунду
+    setInterval(() => {
+        state.money += state.mps;
+        updateUI();
+    }, 1000);
+
+    updateUI();
+</script>
 </body>
 </html>
