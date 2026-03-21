@@ -2,98 +2,95 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Ultimate Clicker</title>
+    <title>Mega Clicker Online</title>
     <style>
-        body { background: #0f0f0f; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .game-card { background: #1e1e1e; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 350px; text-align: center; border: 1px solid #333; }
+        body { background: #121212; color: white; font-family: 'Arial', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .window { background: #1e1e1e; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 320px; text-align: center; }
         
-        /* Счетчик и Лвл */
-        .score { font-size: 48px; font-weight: bold; margin: 10px 0; color: #ffcc00; }
-        .level-info { font-size: 18px; color: #aaa; margin-bottom: 20px; }
+        /* Скрытие блоков */
+        .hidden { display: none; }
 
-        /* Кнопка Клика */
-        #click-zone { width: 150px; height: 150px; background: radial-gradient(#ffcc00, #ff9900); border-radius: 50%; margin: 0 auto 20px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 0 0 20px rgba(255, 204, 0, 0.4); transition: 0.1s; user-select: none; }
-        #click-zone:active { transform: scale(0.9); box-shadow: 0 0 5px rgba(255, 204, 0, 0.2); }
+        /* Регистрация и Язык */
+        input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #444; background: #222; color: white; }
+        select { padding: 10px; margin-bottom: 15px; background: #222; color: white; border-radius: 5px; }
+        .btn { background: #ffcc00; color: black; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; }
 
-        /* Таблица ТОП (Tab-стиль) */
-        .top-list { background: #252525; border-radius: 10px; padding: 10px; text-align: left; margin-top: 20px; }
-        .top-title { font-size: 14px; color: #666; text-transform: uppercase; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .player-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #333; font-size: 14px; }
-        .player-item.current { color: #ffcc00; font-weight: bold; }
-        .online-tag { color: #00ff00; font-size: 10px; }
+        /* Игра */
+        .score { font-size: 40px; margin: 15px 0; color: #ffcc00; }
+        #click-me { width: 120px; height: 120px; background: #333; border: 4px solid #ffcc00; border-radius: 50%; margin: 10px auto; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 30px; user-select: none; }
+        
+        .top-list { margin-top: 20px; background: #252525; padding: 10px; border-radius: 8px; text-align: left; font-size: 13px; }
     </style>
 </head>
 <body>
 
-<div class="game-card">
-    <div class="level-info">Уровень: <span id="lvl">1</span></div>
+<div id="auth-screen" class="window">
+    <h2 id="t-reg">Регистрация</h2>
+    <input type="text" id="username" placeholder="Твой ник...">
+    <select id="lang-select">
+        <option value="ru">Русский</option>
+        <option value="en">English</option>
+    </select>
+    <button class="btn" onclick="startGame()" id="t-start">ПОГНАЛИ</button>
+</div>
+
+<div id="game-screen" class="window hidden">
+    <div id="t-welcome">Привет, <span id="display-name"></span>!</div>
     <div class="score" id="score">0</div>
-    
-    <div id="click-zone">💰</div>
+    <div id="click-me">🔥</div>
     
     <div class="top-list">
-        <div class="top-title"><span>ТОП ИГРОКОВ</span> <span class="online-tag">● ONLINE</span></div>
-        <div id="leaderboard">
-            </div>
+        <strong id="t-top">ТОП ИГРОКОВ:</strong>
+        <div id="leaderboard"></div>
     </div>
 </div>
 
 <script>
-    // Загрузка данных
-    let data = {
-        clicks: Number(localStorage.getItem('c_val')) || 0,
-        lvl: Number(localStorage.getItem('l_val')) || 1
+    const langData = {
+        ru: { reg: "Регистрация", start: "ПОГНАЛИ", welcome: "Привет", top: "ТОП ИГРОКОВ" },
+        en: { reg: "Registration", start: "START", welcome: "Hello", top: "TOP PLAYERS" }
     };
 
-    // Фейковый онлайн-топ (для вайба)
-    let players = [
-        { name: "S1mple_Fan", clicks: 15000, lvl: 150 },
-        { name: "Fanta_Monster", clicks: 7500, lvl: 75 },
-        { name: "Bro_Gamer", clicks: 3200, lvl: 32 },
-        { name: "Я (Ты)", clicks: data.clicks, lvl: data.lvl }
-    ];
+    let p = { name: "", clicks: 0, lang: "ru" };
 
-    const zone = document.getElementById('click-zone');
-    
-    zone.onclick = () => {
-        data.clicks++;
+    function startGame() {
+        const nameInput = document.getElementById('username').value;
+        if (!nameInput) return alert("Введи ник, бро!");
         
-        // Каждые 50 кликов — новый уровень
-        if (data.clicks % 50 === 0) {
-            data.lvl++;
-        }
+        p.name = nameInput;
+        p.lang = document.getElementById('lang-select').value;
         
+        // Перевод интерфейса
+        document.getElementById('t-welcome').innerHTML = `${langData[p.lang].welcome}, <span id="display-name">${p.name}</span>!`;
+        document.getElementById('t-top').innerText = langData[p.lang].top;
+
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        render();
+    }
+
+    document.getElementById('click-me').onclick = () => {
+        p.clicks++;
         render();
     };
 
     function render() {
-        // Сохранение
-        localStorage.setItem('c_val', data.clicks);
-        localStorage.setItem('l_val', data.lvl);
-
-        // Обновление цифр
-        document.getElementById('score').innerText = data.clicks;
-        document.getElementById('lvl').innerText = data.lvl;
-
-        // Обновление топа
-        let me = players.find(x => x.name === "Я (Ты)");
-        me.clicks = data.clicks;
-        me.lvl = data.lvl;
-        players.sort((a, b) => b.clicks - a.clicks);
+        document.getElementById('score').innerText = p.clicks;
+        
+        // Симуляция ТОПа
+        let players = [
+            { n: "Top_Dog", c: 5000 },
+            { n: "Fanta_King", c: 2500 },
+            { n: p.name, c: p.clicks }
+        ].sort((a, b) => b.c - a.c);
 
         let html = "";
-        players.forEach((p, i) => {
-            let isMe = p.name === "Я (Ты)" ? "current" : "";
-            html += `<div class="player-item ${isMe}">
-                        <span>${i+1}. ${p.name}</span>
-                        <span>Lvl ${p.lvl} | ${p.clicks}</span>
-                    </div>`;
+        players.forEach((player, i) => {
+            let style = player.n === p.name ? "color:#ffcc00; font-weight:bold;" : "";
+            html += `<div style="${style}">${i+1}. ${player.n} — ${player.c}</div>`;
         });
         document.getElementById('leaderboard').innerHTML = html;
     }
-
-    render();
 </script>
-
 </body>
 </html>
