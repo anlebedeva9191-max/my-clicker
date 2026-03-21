@@ -2,60 +2,101 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>MEGA CLICKER v2.0</title>
+    <title>MEGA CLICKER v2.0 | Farm Edition</title>
     <style>
-        body { background: #1a1a1a; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; }
-        .container { margin-top: 50px; }
-        #balance { font-size: 48px; color: #00ff88; text-shadow: 0 0 10px #00ff88; }
+        body { background: #0f0f0f; color: #e0e0e0; font-family: 'Verdana', sans-serif; text-align: center; }
+        .container { max-width: 800px; margin: 30px auto; padding: 20px; background: #1a1a1a; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        #balance { font-size: 56px; color: #00ff88; font-weight: bold; margin: 10px 0; }
         .click-btn { 
-            padding: 20px 50px; font-size: 24px; cursor: pointer; 
-            background: #ff4444; border: none; color: white; border-radius: 10px;
+            padding: 30px 60px; font-size: 28px; cursor: pointer; 
+            background: linear-gradient(135deg, #ff4444, #cc0000); border: none; 
+            color: white; border-radius: 50px; box-shadow: 0 5px 15px rgba(255,68,68,0.4);
             transition: 0.1s; margin: 20px;
         }
-        .click-btn:active { transform: scale(0.95); }
-        .shop { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-        .item { 
-            background: #333; padding: 15px; border-radius: 8px; width: 200px;
-            border: 1px solid #444;
+        .click-btn:active { transform: scale(0.92); }
+        .shop { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .item { background: #252525; padding: 15px; border-radius: 10px; border: 1px solid #333; }
+        .item h3 { margin: 5px 0; color: #0088ff; }
+        .item p { font-size: 14px; color: #bbb; }
+        button.buy { 
+            width: 100%; background: #28a745; border: none; color: white; 
+            padding: 10px; cursor: pointer; border-radius: 5px; font-weight: bold;
         }
-        button.buy { background: #0088ff; border: none; color: white; padding: 10px; cursor: pointer; border-radius: 5px; }
-        button.buy:disabled { background: #555; cursor: not-allowed; }
+        button.buy:disabled { background: #444; color: #888; cursor: not-allowed; }
+        .lang-switch { position: absolute; top: 10px; right: 10px; }
+        .lang-switch button { background: #333; color: white; border: 1px solid #555; cursor: pointer; padding: 5px 10px; }
     </style>
 </head>
 <body>
 
+<div class="lang-switch">
+    <button onclick="setLang('ru')">RU</button>
+    <button onclick="setLang('en')">EN</button>
+</div>
+
 <div class="container">
-    <h1>MEGA CLICKER v2.0</h1>
+    <h1 id="title">МЕГА КЛИКЕР v2.0</h1>
     <div id="balance">$0</div>
     <p id="stats">Доход: $0/сек | Сила клика: 1</p>
     
-    <button class="click-btn" onclick="doClick()">КЛИК!</button>
+    <button class="click-btn" id="mainBtn" onclick="doClick()">КЛИК!</button>
 
     <div class="shop">
         <div class="item">
-            <h3>Сильные пальцы</h3>
-            <p>Цена: $<span id="cost1">10</span></p>
-            <button class="buy" id="btn1" onclick="buyUpgrade('click')">Купить (+1 к клику)</button>
+            <h3 id="name1">Сильные пальцы</h3>
+            <p id="desc1">Увеличивает доход с каждого клика.</p>
+            <p><b><span id="labelCost1">Цена</span>: $<span id="cost1">10</span></b></p>
+            <button class="buy" id="btn1" onclick="buyUpgrade('click')">КУПИТЬ</button>
         </div>
         <div class="item">
-            <h3>Видеокарта</h3>
-            <p>Цена: $<span id="cost2">50</span></p>
-            <button class="buy" id="btn2" onclick="buyUpgrade('auto')">Купить (+$2/сек)</button>
+            <h3 id="name2">Видеокарта</h3>
+            <p id="desc2">Приносит пассивный доход каждую секунду.</p>
+            <p><b><span id="labelCost2">Цена</span>: $<span id="cost2">50</span></b></p>
+            <button class="buy" id="btn2" onclick="buyUpgrade('auto')">КУПИТЬ</button>
         </div>
     </div>
-    <br>
-    <button onclick="resetGame()" style="background:none; border:1px solid #555; color:#555; cursor:pointer;">Сброс прогресса</button>
 </div>
 
 <script>
+    const i18n = {
+        ru: {
+            title: "МЕГА КЛИКЕР v2.0", mainBtn: "КЛИК!", stats: "Доход: ${mps}/сек | Сила клика: ${cp}",
+            name1: "Сильные пальцы", desc1: "Увеличивает доход с каждого клика.",
+            name2: "Видеокарта", desc2: "Пассивный доход каждую секунду.",
+            cost: "Цена", buy: "КУПИТЬ"
+        },
+        en: {
+            title: "MEGA CLICKER v2.0", mainBtn: "CLICK!", stats: "Income: ${mps}/sec | Click Power: ${cp}",
+            name1: "Strong Fingers", desc1: "Increases money per each click.",
+            name2: "Graphics Card", desc2: "Generates passive income every second.",
+            cost: "Cost", buy: "BUY"
+        }
+    };
+
+    let lang = localStorage.getItem('lang') || 'ru';
     let state = JSON.parse(localStorage.getItem('clickerSave')) || {
         money: 0, clickPower: 1, mps: 0, cost1: 10, cost2: 50
     };
 
+    function setLang(l) { lang = l; localStorage.setItem('lang', l); updateUI(); }
+
     function updateUI() {
+        const t = i18n[lang];
+        document.getElementById('title').innerText = t.title;
+        document.getElementById('mainBtn').innerText = t.mainBtn;
         document.getElementById('balance').innerText = '$' + Math.floor(state.money);
-        document.getElementById('stats').innerText = `Доход: $${state.mps}/сек | Сила клика: ${state.clickPower}`;
+        document.getElementById('stats').innerText = t.stats.replace('${mps}', state.mps).replace('${cp}', state.clickPower);
+        
+        document.getElementById('name1').innerText = t.name1;
+        document.getElementById('desc1').innerText = t.desc1;
+        document.getElementById('labelCost1').innerText = t.cost;
+        document.getElementById('btn1').innerText = t.buy;
         document.getElementById('cost1').innerText = state.cost1;
+
+        document.getElementById('name2').innerText = t.name2;
+        document.getElementById('desc2').innerText = t.desc2;
+        document.getElementById('labelCost2').innerText = t.cost;
+        document.getElementById('btn2').innerText = t.buy;
         document.getElementById('cost2').innerText = state.cost2;
         
         document.getElementById('btn1').disabled = state.money < state.cost1;
@@ -63,37 +104,18 @@
         localStorage.setItem('clickerSave', JSON.stringify(state));
     }
 
-    function doClick() {
-        state.money += state.clickPower;
-        updateUI();
-    }
+    function doClick() { state.money += state.clickPower; updateUI(); }
 
     function buyUpgrade(type) {
         if (type === 'click' && state.money >= state.cost1) {
-            state.money -= state.cost1;
-            state.clickPower += 1;
-            state.cost1 = Math.floor(state.cost1 * 1.5);
+            state.money -= state.cost1; state.clickPower += 1; state.cost1 = Math.floor(state.cost1 * 1.5);
         } else if (type === 'auto' && state.money >= state.cost2) {
-            state.money -= state.cost2;
-            state.mps += 2;
-            state.cost2 = Math.floor(state.cost2 * 1.6);
+            state.money -= state.cost2; state.mps += 2; state.cost2 = Math.floor(state.cost2 * 1.6);
         }
         updateUI();
     }
 
-    function resetGame() {
-        if(confirm("Точно сбросить?")) {
-            localStorage.clear();
-            location.reload();
-        }
-    }
-
-    // Авто-майнинг раз в секунду
-    setInterval(() => {
-        state.money += state.mps;
-        updateUI();
-    }, 1000);
-
+    setInterval(() => { state.money += state.mps; updateUI(); }, 1000);
     updateUI();
 </script>
 </body>
