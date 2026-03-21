@@ -1,24 +1,28 @@
-# 🚀 Ultimate Clicker Pro
+# 🚀 MEGA CLICKER v2.0
 
-Добро пожаловать в мой первый серьезный веб-проект! Это кликер с прокачкой, авто-фермами и поддержкой двух языков.
+The ultimate web-based farming simulator. Click, upgrade, and build your digital empire right in your browser!
 
-## 🕹️ Играть прямо сейчас
-👉 **[ССЫЛКА НА ИГРУ](https://anlebedeva9191-max.github.io/my-clicker/)**
+## 🌟 What's New in v2.0
+- **Automated Farming:** Purchase Video Cards to generate passive income every second.
+- **Persistent Progress:** Your balance and upgrades are now saved automatically using `localStorage`.
+- **Dynamic Scaling:** Prices for upgrades increase as you get richer to keep the challenge alive.
+- **Enhanced UI:** New dark theme with a sleek, neon-green interface for long gaming sessions.
 
-## 🛠️ Особенности:
-* **Мультиязычность:** Переключайся между RU и EN в один клик.
-* **Авто-майнинг:** Покупай фермы, чтобы деньги капали сами.
-* **Сохранение прогресса:** Твой счет не пропадет после закрытия браузера.
-* **Визуальные эффекты:** Всплывающие цифры и плавная анимация кнопки.
+## 🎮 How to Play
+1. **Click** the big red button to earn your first dollars.
+2. **Upgrade** your clicking power with "Strong Fingers".
+3. **Invest** in "Video Cards" to start earning money while you sleep.
+4. **Don't close the tab** (or do! your progress is saved anyway).
 
-## 💻 Технологии:
-* **HTML5 / CSS3** — интерфейс и дизайн.
-* **JavaScript** — вся логика игры и вычисления.
-* **GitHub Pages** — бесплатный и вечный хостинг.
+## 🛠️ Technical Stack
+- **Frontend:** HTML5, CSS3
+- **Logic:** Vanilla JavaScript
+- **Storage:** Browser LocalStorage API
 
-## 👨‍💻 Автор:
-Создано **Alex** (anlebedeva9191-max). 
-*Развиваю навыки программирования и геймдизайна.*
+## 📈 Roadmap
+- [ ] Add floating "+1" animations on click.
+- [ ] Implement an Achievement system.
+- [ ] Add sound effects and haptic feedback.
 
 ---
-*Если тебе понравился проект, поставь ему ⭐ (Star) на GitHub!*
+*Created with passion for the modding community.*
