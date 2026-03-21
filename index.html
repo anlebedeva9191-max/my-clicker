@@ -2,121 +2,103 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>MEGA CLICKER v2.0 | Farm Edition</title>
+    <title>Hacker Clicker UI</title>
     <style>
-        body { background: #0f0f0f; color: #e0e0e0; font-family: 'Verdana', sans-serif; text-align: center; }
-        .container { max-width: 800px; margin: 30px auto; padding: 20px; background: #1a1a1a; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        #balance { font-size: 56px; color: #00ff88; font-weight: bold; margin: 10px 0; }
-        .click-btn { 
-            padding: 30px 60px; font-size: 28px; cursor: pointer; 
-            background: linear-gradient(135deg, #ff4444, #cc0000); border: none; 
-            color: white; border-radius: 50px; box-shadow: 0 5px 15px rgba(255,68,68,0.4);
-            transition: 0.1s; margin: 20px;
-        }
-        .click-btn:active { transform: scale(0.92); }
-        .shop { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .item { background: #252525; padding: 15px; border-radius: 10px; border: 1px solid #333; }
-        .item h3 { margin: 5px 0; color: #0088ff; }
-        .item p { font-size: 14px; color: #bbb; }
-        button.buy { 
-            width: 100%; background: #28a745; border: none; color: white; 
-            padding: 10px; cursor: pointer; border-radius: 5px; font-weight: bold;
-        }
-        button.buy:disabled { background: #444; color: #888; cursor: not-allowed; }
-        .lang-switch { position: absolute; top: 10px; right: 10px; }
-        .lang-switch button { background: #333; color: white; border: 1px solid #555; cursor: pointer; padding: 5px 10px; }
+        body { background: #1a1a1a; color: #00ff00; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .container { background: #222; border: 2px solid #333; padding: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,255,0,0.1); width: 400px; text-align: center; }
+        
+        /* Индикатор онлайн */
+        .status { font-size: 12px; text-align: right; margin-bottom: 10px; color: #00ff00; text-shadow: 0 0 5px #00ff00; }
+        .status::before { content: "● "; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+
+        /* Главная кнопка */
+        #clickBtn { background: #333; border: 2px solid #00ff00; color: #00ff00; padding: 20px; font-size: 18px; cursor: pointer; border-radius: 5px; width: 100%; transition: 0.1s; }
+        #clickBtn:active { transform: scale(0.95); background: #00ff00; color: #000; }
+
+        /* Полоска опыта */
+        .xp-bar { width: 100%; height: 10px; background: #111; border-radius: 5px; margin: 15px 0; overflow: hidden; }
+        #xp-fill { width: 0%; height: 100%; background: #00ff00; transition: 0.3s; box-shadow: 0 0 10px #00ff00; }
+
+        /* Таблица лидеров (TAB-стиль) */
+        .leaderboard { margin-top: 20px; text-align: left; font-size: 14px; border-top: 1px solid #333; padding-top: 10px; }
+        .player-row { display: flex; justify-content: space-between; padding: 3px 5px; }
+        .me { background: rgba(255, 165, 0, 0.2); color: #ffa500; font-weight: bold; border-radius: 3px; }
     </style>
 </head>
 <body>
 
-<div class="lang-switch">
-    <button onclick="setLang('ru')">RU</button>
-    <button onclick="setLang('en')">EN</button>
-</div>
-
 <div class="container">
-    <h1 id="title">МЕГА КЛИКЕР v2.0</h1>
-    <div id="balance">$0</div>
-    <p id="stats">Доход: $0/сек | Сила клика: 1</p>
+    <div class="status">SERVER ONLINE</div>
+    <h2 id="nameDisplay">Hacker_Bro</h2>
+    <div id="rankDisplay">Rank: Script Kiddie (Lvl 1)</div>
     
-    <button class="click-btn" id="mainBtn" onclick="doClick()">КЛИК!</button>
-
-    <div class="shop">
-        <div class="item">
-            <h3 id="name1">Сильные пальцы</h3>
-            <p id="desc1">Увеличивает доход с каждого клика.</p>
-            <p><b><span id="labelCost1">Цена</span>: $<span id="cost1">10</span></b></p>
-            <button class="buy" id="btn1" onclick="buyUpgrade('click')">КУПИТЬ</button>
+    <div class="xp-bar"><div id="xp-fill"></div></div>
+    
+    <button id="clickBtn">ИНИЦИИРОВАТЬ КЛИК</button>
+    
+    <div class="leaderboard" id="leaderboard">
         </div>
-        <div class="item">
-            <h3 id="name2">Видеокарта</h3>
-            <p id="desc2">Приносит пассивный доход каждую секунду.</p>
-            <p><b><span id="labelCost2">Цена</span>: $<span id="cost2">50</span></b></p>
-            <button class="buy" id="btn2" onclick="buyUpgrade('auto')">КУПИТЬ</button>
-        </div>
-    </div>
 </div>
 
 <script>
-    const i18n = {
-        ru: {
-            title: "МЕГА КЛИКЕР v2.0", mainBtn: "КЛИК!", stats: "Доход: ${mps}/сек | Сила клика: ${cp}",
-            name1: "Сильные пальцы", desc1: "Увеличивает доход с каждого клика.",
-            name2: "Видеокарта", desc2: "Пассивный доход каждую секунду.",
-            cost: "Цена", buy: "КУПИТЬ"
-        },
-        en: {
-            title: "MEGA CLICKER v2.0", mainBtn: "CLICK!", stats: "Income: ${mps}/sec | Click Power: ${cp}",
-            name1: "Strong Fingers", desc1: "Increases money per each click.",
-            name2: "Graphics Card", desc2: "Generates passive income every second.",
-            cost: "Cost", buy: "BUY"
-        }
+    // База данных
+    let p = {
+        clicks: Number(localStorage.getItem('h_c')) || 0,
+        lvl: Number(localStorage.getItem('h_l')) || 1,
+        xp: Number(localStorage.getItem('h_x')) || 0
     };
 
-    let lang = localStorage.getItem('lang') || 'ru';
-    let state = JSON.parse(localStorage.getItem('clickerSave')) || {
-        money: 0, clickPower: 1, mps: 0, cost1: 10, cost2: 50
+    let players = [
+        { n: "G-Man", c: 10000, l: 80 },
+        { n: "Pro_Gmodder", c: 5000, l: 45 },
+        { n: "Fanta_Fan", c: 1200, l: 12 },
+        { n: "Hacker_Bro", c: p.clicks, l: p.lvl }
+    ];
+
+    const btn = document.getElementById('clickBtn');
+    
+    btn.onclick = () => {
+        p.clicks++;
+        p.xp += 50;
+
+        if(p.xp >= 1000) {
+            p.lvl++;
+            p.xp = 0;
+            alert("LEVEL UP! Твой ранг повышен!");
+        }
+        
+        saveAndRender();
     };
 
-    function setLang(l) { lang = l; localStorage.setItem('lang', l); updateUI(); }
+    function saveAndRender() {
+        localStorage.setItem('h_c', p.clicks);
+        localStorage.setItem('h_l', p.lvl);
+        localStorage.setItem('h_x', p.xp);
 
-    function updateUI() {
-        const t = i18n[lang];
-        document.getElementById('title').innerText = t.title;
-        document.getElementById('mainBtn').innerText = t.mainBtn;
-        document.getElementById('balance').innerText = '$' + Math.floor(state.money);
-        document.getElementById('stats').innerText = t.stats.replace('${mps}', state.mps).replace('${cp}', state.clickPower);
-        
-        document.getElementById('name1').innerText = t.name1;
-        document.getElementById('desc1').innerText = t.desc1;
-        document.getElementById('labelCost1').innerText = t.cost;
-        document.getElementById('btn1').innerText = t.buy;
-        document.getElementById('cost1').innerText = state.cost1;
+        // Обновляем данные в топе
+        let me = players.find(x => x.n === "Hacker_Bro");
+        me.c = p.clicks;
+        me.l = p.lvl;
+        players.sort((a, b) => b.c - a.c);
 
-        document.getElementById('name2').innerText = t.name2;
-        document.getElementById('desc2').innerText = t.desc2;
-        document.getElementById('labelCost2').innerText = t.cost;
-        document.getElementById('btn2').innerText = t.buy;
-        document.getElementById('cost2').innerText = state.cost2;
+        // UI
+        document.getElementById('rankDisplay').innerText = `Rank: Level ${p.lvl}`;
+        document.getElementById('xp-fill').style.width = (p.xp / 10) + "%";
         
-        document.getElementById('btn1').disabled = state.money < state.cost1;
-        document.getElementById('btn2').disabled = state.money < state.cost2;
-        localStorage.setItem('clickerSave', JSON.stringify(state));
+        let html = "";
+        players.forEach((player, i) => {
+            let isMe = player.n === "Hacker_Bro" ? "me" : "";
+            html += `<div class="player-row ${isMe}">
+                        <span>${i+1}. ${player.n}</span>
+                        <span>Lvl ${player.l} | ${player.c}</span>
+                    </div>`;
+        });
+        document.getElementById('leaderboard').innerHTML = html;
     }
 
-    function doClick() { state.money += state.clickPower; updateUI(); }
-
-    function buyUpgrade(type) {
-        if (type === 'click' && state.money >= state.cost1) {
-            state.money -= state.cost1; state.clickPower += 1; state.cost1 = Math.floor(state.cost1 * 1.5);
-        } else if (type === 'auto' && state.money >= state.cost2) {
-            state.money -= state.cost2; state.mps += 2; state.cost2 = Math.floor(state.cost2 * 1.6);
-        }
-        updateUI();
-    }
-
-    setInterval(() => { state.money += state.mps; updateUI(); }, 1000);
-    updateUI();
+    saveAndRender();
 </script>
+
 </body>
 </html>
